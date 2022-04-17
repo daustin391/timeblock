@@ -3,7 +3,7 @@
 
 """
 
-from sql import TimeblockDB
+from timeblock.sql import TimeblockDB
 
 
 def main():
