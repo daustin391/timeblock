@@ -41,9 +41,17 @@ def test_add_duration(instance):
 
 def test_end(instance):
     """Test that end date attr can be updated and start date moves accordingly"""
+    # end unset
     assert instance.end is None
+    # end set through assignment, no duration
     instance.end = retire
     assert instance.end == retire
+    # end set through assignment, with duration
+    # start should move
+    instance.est_duration = to_orbit
+    instance.end = apollo
+    assert instance.end == apollo
+    assert instance.start == apollo - to_orbit
 
 
 def test_change_duration(instance):
@@ -54,5 +62,5 @@ def test_change_duration(instance):
     assert instance.end == challenger_launch + til_explosion
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     main()
