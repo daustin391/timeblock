@@ -9,4 +9,5 @@ From the project root:
 
 ## Tests
 Tests require pytest `pip install pytest`
+
 `python3 tests/test_<test name>.py`
