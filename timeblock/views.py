@@ -1,19 +1,23 @@
 """ Views
-    Handle display of text interface for Timeblock app
+    Handle display of interface for Timeblock app
 """
-import urwid
+from flask import Flask, render_template
 
 
-def menu():
-    """Create top-menu widget"""
-    bg = urwid.SolidFill(" ")
-    menu_text = urwid.Text("(A) Add item")
-    menu_box = urwid.Filler(menu_text)
-    screen = urwid.Overlay(menu_box, bg, "left", ("relative", 100), "bottom", 1)
-    return screen
+app = Flask(__name__)
 
 
-def display(view):
-    """Display widget on screen"""
-    loop = urwid.MainLoop(view)
-    loop.run()
+@app.route("/")
+def index():
+    """Main app view"""
+    context = {"actions": [{"desc": "make coffee"}]}
+    return render_template("actions.html", **context)
+
+
+def runserver():
+    """Runs Flask server"""
+    app.run()
+
+
+if __name__ == "__main__":
+    runserver()

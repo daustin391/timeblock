@@ -1,18 +1,16 @@
 # Timeblock
-This is a text-based timeblocking script written in Python 3.9.6.
+This is a timeblocking web app written in Python 3.9.6.
 
-It is a work-in-progress and doesn't do much useful right now.
+It is a work-in-progress and doesn't do anything useful right now.
 
 ## Requirements
-This application uses Urwid to display to the terminal.
-To install required packages run:
-`pip install -r requirements.txt`
-
-## How to run
-From the project root:
-`python3 timeblock` 
+This project uses Flask
+`pip install Flask`
 
 ## Tests
-Tests require pytest `pip install pytest`
+Tests require pytest 
+```bash
+pip install pytest
 
-`python3 tests/test_<test name>.py`
+python3 tests/test_<test name>.py
+```

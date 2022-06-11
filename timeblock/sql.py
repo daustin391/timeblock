@@ -5,11 +5,12 @@
 
 import sqlite3
 from sqlite3 import Error
-from typing import Union
-import os.path
+from typing import Union, Optional
 
 
 class DB:
+    """Interface for SQLite3 database"""
+
     def __init__(self):
         self.connection = None
         self.cursor = None
@@ -27,8 +28,9 @@ class DB:
 
     def read_query(
         self, query: str, parameters: Union[tuple, dict] = None
-    ) -> Union[list[tuple], None]:
-        result = None
+    ) -> list[tuple]:
+        """Send query for data from database"""
+        result = []
         try:
             if parameters:
                 self.cursor.execute(query, parameters)
@@ -43,26 +45,34 @@ class DB:
         self,
         query: str,
         parameters: Union[list[tuple], tuple, list[dict], dict, None] = None,
-    ) -> int:
+    ) -> Optional[int]:
+        """
+        Send query to write data to database.
+        If only one row is written to, returns the row ID #
+        """
         try:
             if not parameters:
                 self.cursor.execute(query)
             elif isinstance(parameters, list):
                 self.cursor.executemany(query, parameters)
-                return 0
+                return None
             else:
                 self.cursor.execute(query, parameters)
             return self.cursor.lastrowid
         except Error as e:
             print(f"The error {e} occured.")
+            return None
 
     def script(self, sql_script: str):
+        """Executes multiple SQL queries"""
         with self.connection as con:
             cur = con.cursor()
             cur.executescript(sql_script)
 
 
 class TimeblockDB(DB):
+    """SQL database tools for Timeblock app"""
+
     def __enter__(self):
         super().__enter__()
         if not self.check_for_db():
