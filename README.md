@@ -5,12 +5,18 @@ It is a work-in-progress and doesn't do anything useful right now.
 
 ## Requirements
 This project uses Flask
-`pip install Flask`
+
+```bash
+pip install Flask
+```
 
 ## Tests
 Tests require pytest 
+### Install pytest
 ```bash
 pip install pytest
-
-python3 tests/test_<test name>.py
+```
+### Run all tests
+```bash
+python3 tests
 ```

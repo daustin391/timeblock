@@ -18,7 +18,7 @@ def server():
     with subprocess.Popen(
         ["python", "/Users/daveaustin/programming/timeblock/timeblock/views.py"]
     ) as p:
-        time.sleep(4)  # 2 can be too short
+        time.sleep(9)  # prevents requests before server runs
         yield
         p.send_signal(SIGINT)
 
