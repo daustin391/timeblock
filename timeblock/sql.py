@@ -4,73 +4,119 @@
 """
 
 import sqlite3
-from sqlite3 import Error
-from typing import Union, Optional
+from sqlite3 import Error, Connection, Cursor
+from typing import (
+    Union,
+    Optional,
+    TypeVar,
+    Sequence,
+    Mapping,
+    Iterable,
+)
+from datetime import datetime, date
+from typing_extensions import TypeGuard
 
 
-class DB:
+DB = TypeVar("DB", bound="Database")
+SqlType = Union[None, int, float, str, bytes, date, datetime]
+SqlSeq = Union[tuple[SqlType, ...], dict[str, SqlType]]
+
+
+class Database:
     """Interface for SQLite3 database"""
 
-    def __init__(self):
-        self.connection = None
-        self.cursor = None
+    def __init__(self, filename: str = None):
+        self.connection: Optional[Connection] = None
+        self.cursor: Optional[Cursor] = None
+        self.filename = filename if filename else "db.sql"
 
-    def __enter__(self):
-        try:
-            self.connection = sqlite3.connect("db.sql")
-            self.cursor = self.connection.cursor()
-        except Error as e:
-            print(f"The error {e} occured.")
+    def __enter__(self: DB):
+        self.connection = sqlite3.connect(self.filename)
+        self.cursor = self.connection.cursor()
         return self
 
-    def __exit__(self, *args, **kwargs):
-        self.connection.close()
+    def __exit__(self, *args, **kwargs) -> None:
+        if self.connection:
+            self.connection.close()
+
+    def __repr__(self):
+        return f'DB("{self.filename}")'
 
     def read_query(
         self, query: str, parameters: Union[tuple, dict] = None
     ) -> list[tuple]:
         """Send query for data from database"""
-        result = []
-        try:
-            if parameters:
-                self.cursor.execute(query, parameters)
-            else:
-                self.cursor.execute(query)
-            result = self.cursor.fetchall()
-        except Error as e:
-            print(f"The error {e} occured.")
+        result: list[tuple] = []
+        if self.cursor:
+            try:
+                if parameters:
+                    self.cursor.execute(query, parameters)
+                else:
+                    self.cursor.execute(query)
+                result = self.cursor.fetchall()
+            except Error as e:
+                print(f"Error: {e}")
+        else:
+            print("Error: no cursor, are you using 'with'?")
         return result
 
     def write_query(
         self,
         query: str,
-        parameters: Union[list[tuple], tuple, list[dict], dict, None] = None,
+        parameters: Union[SqlSeq, Sequence[SqlSeq], None] = None,
     ) -> Optional[int]:
         """
-        Send query to write data to database.
-        If only one row is written to, returns the row ID #
+        Writes to database.
+
+        Returns lastrowid, the row number of the last
+        successful INSERT or REPLACE using execute().
+        executemany() and executescript() don't update lastrowid.
+        If no successful INSERTs into table occurred
+        on connection then lastrowid == 0.
         """
-        try:
-            if not parameters:
-                self.cursor.execute(query)
-            elif isinstance(parameters, list):
-                self.cursor.executemany(query, parameters)
-                return None
-            else:
-                self.cursor.execute(query, parameters)
-            return self.cursor.lastrowid
-        except Error as e:
-            print(f"The error {e} occured.")
-            return None
+        if self.cursor and self.connection:
+            try:
+                if not parameters:
+                    self.cursor.execute(query)
+                elif isinstance(
+                    parameters, Sequence
+                ) and self.is_list_of_iter(parameters):
+                    self.cursor.executemany(query, parameters)
+                elif self.is_not_string(parameters):
+                    self.cursor.execute(query, parameters)
+                self.connection.commit()
+                return self.cursor.lastrowid
+            except Error as e:
+                print(f"Error: {e}")
+        else:
+            print("Error: no cursor, are you using 'with'?")
+        return None
+
+    @staticmethod
+    def is_not_string(obj) -> TypeGuard[Iterable]:
+        """Type checks if object is a string"""
+        iter(obj)
+        if isinstance(obj, str):
+            return False
+        return True
+
+    def is_list_of_iter(
+        self,
+        obj: Sequence,
+    ) -> TypeGuard[Sequence[Union[Sequence, Mapping]]]:
+        """Type checks that parameter
+        is a list of sequences (tuples) or mappings (dicts)"""
+        return all(self.is_not_string(x) for x in obj)
 
     def script(self, sql_script: str):
         """Executes multiple SQL queries"""
-        with self.connection as con:
-            cur = con.cursor()
-            cur.executescript(sql_script)
+        if self.connection:
+            with self.connection as con:
+                cur = con.cursor()
+                cur.executescript(sql_script)
 
 
-class TimeblockDB(DB):
+class TimeblockDB(Database):
     """SQL database tools for Timeblock app"""
 
     def __enter__(self):
