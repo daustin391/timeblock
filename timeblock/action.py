@@ -1,13 +1,25 @@
-""" Action object
-    A class for representing and manipulating blocks of time
-"""
+"""Define Action class for representing and manipulating blocks of time."""
 from datetime import timedelta, datetime
 from typing import Optional
 
 
 class Action:
-    """A representation of actions, events, etc. in time
-    and methods for manipulating them"""
+    """
+    A block of time.
+
+    Constructors:
+        Action()
+        from_tuple()
+
+    Properties:
+        start
+        end
+
+    Attributes:
+        desc
+        est_duration
+        actual_duration
+    """
 
     def __init__(
         self,
@@ -16,6 +28,15 @@ class Action:
         start: Optional[datetime] = None,
         end: Optional[datetime] = None,
     ):
+        """
+        Instantiate Action object.
+
+        Args:
+            desc: A string describing the action.
+
+            Optionally, datetimes can be passed to set start and end,
+            or a timedelta can be passed to set est_duration.
+        """
         self.actual_duration: Optional[timedelta] = None
         self.desc = desc
         self.est_duration = est_duration
@@ -23,11 +44,12 @@ class Action:
         self._end = end
 
     def __repr__(self):
+        """Return string resembling constructor call."""
         return f"Action('{self.desc}')"
 
     @property
     def start(self):
-        """The time an action is scheduled to take place"""
+        """Access the datetime the action started or is scheduled to start."""
         return self._start
 
     @start.setter
@@ -36,7 +58,7 @@ class Action:
 
     @property
     def end(self):
-        """The time an action is expected to end"""
+        """Access the datetime the action ended or is expected to end."""
         if self._start:
             return self.start + self.est_duration
         return self._end
@@ -47,3 +69,18 @@ class Action:
             self._start = value - self.est_duration
         else:
             self._end = value
+
+    @classmethod
+    def from_tuple(cls, action: tuple) -> "Action":
+        """
+        Construct Action from a tuple.
+
+        The tuple should be the same format as returned by the SQL query:
+        "SELECT * FROM action"
+        (id, description, estimated_duration, actual_duration, start_datetime)
+
+        Args:
+            action
+        """
+        est_duration = timedelta(seconds=action[2]) if action[2] else None
+        return cls(action[1], est_duration=est_duration)

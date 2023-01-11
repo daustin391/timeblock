@@ -1,18 +1,16 @@
-""" Tests for Stopwatch module
+"""
+Tests for `Stopwatch` class.
 
+The test covers the following:
+    - Start the Stopwatch and check that it returns a timedelta.
 """
 
 from datetime import timedelta
-from pytest import main
 from timeblock.stopwatch import Stopwatch
 
 
 def test_start():
-    """Test that the Stopwatch can be started and return timedelta"""
+    """Start a Stopwatch object and test that .check() returns a timedelta."""
     watch = Stopwatch()
     watch.start()
     assert isinstance(watch.check(), timedelta)
-
-
-if __name__ == "__main__":  # pragma: no cover
-    main()

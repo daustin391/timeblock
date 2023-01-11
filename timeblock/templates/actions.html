@@ -9,8 +9,9 @@
     <body>
         <ul>
             {% for action in actions %}
-            <li>{{ action.desc }}</li>
+            <li>{{ action|attr('desc') }}</li>
             {% endfor %}
         </ul>
+        <form method="post"><input type="text" name="action" id="action"></form>
     </body>
 </html>

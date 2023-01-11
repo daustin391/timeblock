@@ -1,66 +1,124 @@
-""" Tests for Action class
-
 """
-# pylint: disable=redefined-outer-name
+This module contains tests for the `Action` class.
+
+Included are a set of date and time constants that are used as test data.
+These constants are:
+    - APOLLO: A datetime object (set to the launch of Apollo 11)
+    - TO_ORBIT: A timedelta object (set to Apollo 11's time to Earth orbit)
+    - RETIRE: A datetime object (set to the retirement of the Space Shuttle)
+    - CHALLENGER: A datetime object (set to the launch of that Shuttle)
+    - TO_EXPLOSION: A timedelta object (the duration of Challenger's flight)
+
+This fixture is imported from tests/conftest.py:
+    - instance: An instance of Action with Action.desc set to "test".
+
+The tests cover the following:
+    - The `__repr__` method returns a string representation of the object.
+    - The `start` property can be updated.
+    - The `end` property can be updated.
+    - The `est_duration` attribute can be updated.
+    - The alternate constructor `from_tuple` can create an Action object.
+"""
+
 from datetime import datetime, timedelta
-from pytest import main, fixture
+
 from timeblock.action import Action
 
 
-apollo = datetime(1969, 7, 16, 13, 32)
-to_orbit = timedelta(minutes=12)
-retire = datetime(2011, 3, 9)
-challenger_launch = datetime(1986, 1, 28, 16, 38)
-til_explosion = timedelta(seconds=73)
+APOLLO = datetime(1969, 7, 16, 13, 32)
+TO_ORBIT = timedelta(minutes=12)
+RETIRE = datetime(2011, 3, 9)
+CHALLENGER = datetime(1986, 1, 28, 16, 38)
+TO_EXPLOSION = timedelta(seconds=73)
 
 
-@fixture
-def instance():
-    """Provides an instance of Action for testing"""
-    return Action("test")
+def test_repr(instance: Action):
+    """
+    Test that __repr__ returns a string representation of the object.
+
+    Args:
+        instance (Action): An instance of Action with Action.desc set to "test"
+    """
+    assert repr(instance) == "Action('test')"
 
 
-def test_repr(instance):
-    """Test that __repr__ works"""
-    assert instance.__repr__() == "Action('test')"
+def test_start(instance: Action):
+    """
+    Test that the 'start' property can be updated.
+
+    This test sets 'start' to a specific value and verifies that
+    the getter method returns the correct value.
+
+    It also tests the behavior when 'end' and 'est_duration' are set.
+    If these are set and 'start' is not, 'start' should be set
+    to 'end' minus 'est_duration'.
+
+    Args:
+        instance (Action): An instance of Action with Action.desc set to "test"
+    """
+    assert instance.start is None
+    instance.start = APOLLO
+    assert instance.start == APOLLO
+
+    instance.est_duration = TO_ORBIT
+    instance.end = APOLLO
+    assert instance.start == APOLLO - TO_ORBIT
 
 
-def test_start(instance):
-    """Test that start date attr can be updated"""
-    instance.start = apollo
-    assert instance.start == apollo
+def test_end(instance: Action):
+    """
+    Test that the 'end' property can be updated.
 
+    This test sets 'end' to a specific value and verifies that
+    the getter method returns the correct value.
 
-def test_add_duration(instance):
-    """Test that duration attr can be updated and endtime moves accordingly"""
-    instance.start = apollo
-    instance.est_duration = to_orbit
-    assert instance.est_duration == to_orbit
-    assert instance.end == datetime(1969, 7, 16, 13, 32 + 12)
+    It also tests the behavior when 'start' and 'est_duration' is set.
+    If these are set, 'end' should be set to 'start' plus 'est_duration'.
 
-
-def test_end(instance):
-    """Test that end date attr can be updated and start date moves accordingly"""
-    # end unset
+    Args:
+        instance (Action): An instance of Action with Action.desc set to "test"
+    """
     assert instance.end is None
-    # end set through assignment, no duration
-    instance.end = retire
-    assert instance.end == retire
-    # end set through assignment, with duration
-    # start should move
-    instance.est_duration = to_orbit
-    instance.end = apollo
-    assert instance.end == apollo
-    assert instance.start == apollo - to_orbit
+    instance.end = RETIRE
+    assert instance.end == RETIRE
+
+    instance.start = CHALLENGER
+    instance.est_duration = TO_EXPLOSION
+    assert instance.end == CHALLENGER + TO_EXPLOSION
 
 
-def test_change_duration(instance):
-    """Test that duration attr can be updated and endtime moves accordingly"""
-    instance.est_duration = to_orbit
-    instance.start = challenger_launch
-    instance.est_duration = til_explosion
-    assert instance.end == challenger_launch + til_explosion
+def test_add_duration(instance: Action):
+    """
+    Test that the 'est_duration' attribute can be updated.
+
+    Args:
+        instance (Action): An instance of Action with Action.desc set to "test"
+    """
+    assert instance.est_duration is None
+    instance.est_duration = TO_ORBIT
+    assert instance.est_duration == TO_ORBIT
 
 
-if __name__ == "__main__":  # pragma: no cover
-    main()
+def test_change_duration(instance: Action):
+    """
+    Test that the 'est_duration' attribute can be changed.
+
+    Checks how changing 'est_duration' affects 'start' and 'end'.
+    Changing 'est_duration' should move 'end' if 'start' is set.
+
+    Args:
+        instance (Action): An instance of Action with Action.desc set to "test"
+    """
+    assert instance.est_duration is None
+    instance.est_duration = TO_ORBIT
+    instance.start = CHALLENGER
+    assert instance.end == CHALLENGER + TO_ORBIT
+    instance.est_duration = TO_EXPLOSION
+    assert instance.end == CHALLENGER + TO_EXPLOSION
+
+
+def test_from_tuple():
+    """Test that 'from_tuple' constructor creates the correct 'Action'."""
+    fixture_action = Action.from_tuple((1, "test", 1500, None, None))
+    assert fixture_action.desc == "test"
+    assert fixture_action.est_duration == timedelta(minutes=25)
