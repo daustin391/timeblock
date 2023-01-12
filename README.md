@@ -19,8 +19,12 @@ Timeblock requires the following dependencies:
 
 - Flask: a web framework for Python, used to build the web interface
 - typing_extensions: a library for extending the type hinting functionality in Python, used to improve the code quality
-- pytest: a testing framework for Python, used to run the tests
-- requests: a library for making HTTP requests in Python, used to simulate HTTP requests in the tests
+
+Additionaly, runnng tests requires:
+
+- pytest: a testing framework for Python
+- selenium: for automating a web browser
+- requests: a library for making HTTP requests
 
 To install these dependencies, you will need to have Python 3 and pip installed on your system. If you do not already have these, you can install them by following the instructions at the following URL: https://packaging.python.org/tutorials/installing-packages/
 

@@ -12,6 +12,7 @@ The following functions are defined:
 """
 from flask import render_template, request, redirect, Blueprint, current_app
 from werkzeug.wrappers.response import Response
+
 from timeblock import sql
 from timeblock.action import Action
 

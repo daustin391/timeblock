@@ -25,7 +25,9 @@ from typing import (
     Iterable,
 )
 from datetime import datetime, date, timedelta
+
 from typing_extensions import TypeGuard
+
 from timeblock.action import Action
 
 
